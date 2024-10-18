@@ -49,7 +49,7 @@ configuration = config.get_plugin_entry_point(
 m_package = SchemaPackage()
 
 
-class NewSchemaPackage(Schema):
+class LabFolderImport(LabfolderProject):
     m_def = Section(
         label='General Labfolder Project Import',
         categories=[ElnIntegrationCategory],
