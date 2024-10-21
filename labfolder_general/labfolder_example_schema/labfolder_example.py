@@ -16,11 +16,6 @@
 # limitations under the License.
 #
 
-from nomad.metainfo import (
-    Package,
-    Quantity,
-    SubSection,
-)
 from nomad.datamodel.data import (
     ArchiveSection,
     EntryData,
@@ -28,47 +23,36 @@ from nomad.datamodel.data import (
 from nomad.datamodel.metainfo.annotations import (
     ELNAnnotation,
 )
+from nomad.metainfo import (
+    Package,
+    Quantity,
+    SubSection,
+)
 
 m_package = Package(name='LabFolder Import Example')
 
+
 class RepeatFromTable(ArchiveSection):
-    name = Quantity(
-        type=str
-    )
-    value = Quantity(
-        type=float,
-        unit='g'
-    )
+    name = Quantity(type=str)
+    value = Quantity(type=float, unit='g')
+
 
 class SeparateArchive(EntryData):
-    name = Quantity(
-        type=str
-    )
-    value = Quantity(
-        type=float,
-        unit='s'
-    )
+    name = Quantity(type=str)
+    value = Quantity(type=float, unit='s')
+
 
 class LabfolderImportExample(EntryData):
-    quantity_1 = Quantity(
-        type=float,
-        unit='mm'
-    )
-    quantity_2 = Quantity(
-        type=str
-    )
-    text_field = Quantity(
-        type=str
-    )
-    from_table = SubSection(
-        section_def=RepeatFromTable,
-        repeats=True
-    )
+    quantity_1 = Quantity(type=float, unit='mm')
+    quantity_2 = Quantity(type=str)
+    text_field = Quantity(type=str)
+    from_table = SubSection(section_def=RepeatFromTable, repeats=True)
     reference = Quantity(
         type=SeparateArchive,
         a_eln=ELNAnnotation(
             component='ReferenceEditQuantity',
-        )
+        ),
     )
+
 
 m_package.__init_metainfo__()
