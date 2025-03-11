@@ -13,7 +13,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
 ]
-name = "LabFolder-Plugin"
+name = "nomad-labfolder-plugin"
 description = "Can import LabFolder entries into the NOMAD ELN when provided with a mapping file"
 version = "0.1.0"
 readme = "README.md"
