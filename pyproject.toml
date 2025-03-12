@@ -77,7 +77,7 @@ select = [
     "UP",
     # isort
     "I",
-    # pylint 
+    # pylint
     "PL",
 ]
 
@@ -112,7 +112,7 @@ where = ["src"]
 
 [project.entry-points.'nomad.plugin']
 
-schema_package_entry_point = "labfolder_plugin.schema_packages:schema_package_entry_point"
+schema_package_entry_point = "labfolder_plugin:schema_package_entry_point"
 
 
 
