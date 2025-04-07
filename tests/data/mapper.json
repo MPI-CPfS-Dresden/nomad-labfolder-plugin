@@ -1,0 +1,63 @@
+{
+    "main": {
+        "schema": "cpfs_synthesis.schema_packages.bridgman.CPFSBridgmanTechnique",
+        "transformer": {
+            "rules": {
+                "ID":{
+                    "source": "General_information.Sample_ID",
+                    "target": "name"
+                },
+                "LAB_ID":{
+                    "source": "Basic_properties_of_the_sample.Hazards",
+                    "target": "lab_id"
+                }
+            }
+        }
+    },
+    "furnace": {
+        "schema": "cpfs_synthesis.cpfs_schemes.CPFSFurnace",
+        "transformer": {
+            "rules": {
+                "name": {
+                    "source": "Furnace.Furnace_Name",
+                    "target": "model"
+                }
+            }
+        }
+    },
+    "crucible": {
+        "schema": "cpfs_synthesis.cpfs_schemes.CPFSCrucible",
+        "transformer": {
+            "rules": {
+                "material": {
+                    "source": "Crucible.Crucible_Material",
+                    "target": "material"
+                },
+                "diameter": {
+                    "source": "Crucible.Diamieter",
+                    "target": "diameter"
+                }
+            }
+        }
+    },
+    "resulting_crystal": {
+        "schema": "cpfs_synthesis.cpfs_schemes.CPFSCrystal",
+        "IsArchive": "True",
+        "transformer": {
+            "rules": {
+                "ID": {
+                    "source": "General_information.Sample_ID",
+                    "target": "sample_id"
+                },
+                "safety_reactivity": {
+                    "source": "Basic_properties_of_the_sample.Hazards",
+                    "target": "safety_reactivity"
+                },
+                "name": {
+                    "source": "General_information.name",
+                    "target": "name"
+                }
+            }
+        }
+    }
+}
