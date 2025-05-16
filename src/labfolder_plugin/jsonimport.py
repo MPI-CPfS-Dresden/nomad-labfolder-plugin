@@ -115,6 +115,10 @@ class SubSectionMapper(MainMapper):
         type=bool,
         description='Archives will be created separately and linked only as reference',
     )
+    repeats = Quantity(
+        type=bool,
+        description='Marks a repeatable Subsection, attaches to existing list.',
+    )
 
     def normalize(self, archive, logger: BoundLogger) -> None:
         super().normalize(archive, logger)
@@ -172,9 +176,13 @@ class JsonMapper(EntryData, ArchiveSection):
                 subsection = jsonfile[key]
                 if 'is_main' in subsection and subsection['is_main'] == 'True':
                     sectionclass = MainMapper()
-                    if 'main_key' in subsection or 'is_archive' in subsection:
+                    if (
+                        'main_key' in subsection
+                        or 'is_archive' in subsection
+                        or 'repeats' in subsection
+                    ):
                         logger.error(
-                            'Main section of json mapper should not contain main_key or is_archive.'
+                            'Main section of json mapper should not contain main_key or is_archive or repeats.'
                         )
                 else:
                     sectionclass = SubSectionMapper()
@@ -184,6 +192,8 @@ class JsonMapper(EntryData, ArchiveSection):
                         logger.error(f'main_key is missing from Subsection {key}.')
                     if 'is_archive' in subsection:
                         sectionclass.is_archive = subsection['is_archive']
+                    if 'repeats' in subsection:
+                        sectionclass.repeats = subsection['repeats']
                 sectionclass.name = key
                 try:
                     sectionclass.path_to_schema = subsection['schema']
@@ -322,6 +332,8 @@ class MappedJson(EntryData, ArchiveSection):
                     subclass.name + '.archive.json',
                 )
                 setattr(mainclass, submapping['main_key'], sub_ref)
+            elif 'repeats' in submapping.keys() and submapping['repeats']:
+                mainclass[submapping['main_key']].append(subclass)
             else:
                 setattr(mainclass, submapping['main_key'], subclass)
 

@@ -104,5 +104,14 @@
                     "target": "manufacturer"
                 }
             }
+    },
+    "temperature_step": {
+        "main_key": "steps",
+        "schema": "cpfs_synthesis.schema_packages.bridgman.CPFSBridgmanTechniqueStep",
+        "repeats": "True",
+        "rules": {
+            "Process_Parameters.Temperature.value": "temperature",
+            "Process_Parameters.Pulling_rate.value": "pulling_rate"
+        }
     }
 }
