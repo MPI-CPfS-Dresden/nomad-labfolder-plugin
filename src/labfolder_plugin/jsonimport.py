@@ -24,7 +24,6 @@ from nomad.metainfo import (
     SubSection,
 )
 from nomad.search import search
-from nomad.units import ureg
 from nomad.utils.json_transformer import Transformer
 from nomad_material_processing.utils import create_archive
 from structlog.stdlib import (
@@ -320,6 +319,9 @@ class MappedJson(EntryData, ArchiveSection):
             subclass.m_update_from_dict(transformed_sub)
             if tempunits:
                 for unitkey in tempunits.keys():
+                    from pint import UnitRegistry
+
+                    ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
                     setattr(
                         subclass,
                         unitkey,

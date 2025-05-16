@@ -111,7 +111,9 @@
         "repeats": "True",
         "rules": {
             "Process_Parameters.Temperature.value": "temperature",
-            "Process_Parameters.Pulling_rate.value": "pulling_rate"
+            "Process_Parameters.Pulling_rate.value": "pulling_rate",
+            "Process_Parameters.Temperature.unit": "tempunits.temperature",
+            "Process_Parameters.Pulling_rate.unit": "tempunits.pulling_rate"
         }
     }
 }
