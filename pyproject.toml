@@ -113,6 +113,10 @@ where = ["src"]
 [project.entry-points.'nomad.plugin']
 
 schema_package_entry_point = "labfolder_plugin:schema_package_entry_point"
+jsonmapper_entry = "labfolder_plugin:jsonmapper_entry"
+jsonmapper_parser = "labfolder_plugin:jsonmapper_parser"
+mappedjson_entry = "labfolder_plugin:mappedjson_entry"
+mappedjson_parser = "labfolder_plugin:mappedjson_parser"
 
 
 

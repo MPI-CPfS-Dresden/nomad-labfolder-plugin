@@ -1,45 +1,42 @@
 {
-    "nomadclass": "jsonmapper",
-    "mapper_key": "CPFSBridgmanTechnique",
-    "main": {
+    "json_mapper_class_key": "CPFSBridgmanTechnique",
+    "main_schema": {
+        "is_main": "True",
         "schema": "cpfs_synthesis.schema_packages.bridgman.CPFSBridgmanTechnique",
-        "transformer": {
             "rules": {
                 "ID":{
                     "source": "General_information.Name",
                     "target": "name"
                 }
-            }
         }
     },
     "Furnace": {
         "main_key": "furnace",
         "schema": "cpfs_synthesis.cpfs_schemes.CPFSFurnace",
-        "transformer": {
             "rules": {
                 "model": {
                     "source": "Furnace.Furnace_Name",
-                    "target": "model"
+                    "target": "model",
+                    "use_rule": "model"
                 },
                 "name": {
                     "source": "Furnace.Furnace_Name",
-                    "target": "name"
+                    "target": "name",
+                    "default_value": "default_name"
                 },
                 "geometry": {
                     "source": "Furnace.Geometry",
-                    "target": "geometry"
+                    "target": "geometry",
+                    "conditions": [
+                        {"regex_condition": {"regex_path": "Furnace.Geometry", "regex_pattern": "^abc"}}
+                    ]
                 },
-                "Heating Type": {
-                    "source": "Furnace.Heating_Type",
-                    "target": "heating"
-                }
-            }
+                "Furnace.Heating_Type": "heating"
         }
     },
     "crucible": {
         "main_key": "crucible",
         "schema": "cpfs_synthesis.cpfs_schemes.CPFSCrucible",
-        "transformer": {
             "rules": {
                 "name": {
                     "source": "Crucible.Crucible_Material",
@@ -54,13 +51,11 @@
                     "target": "tempunits.diameter"
                 }
             }
-        }
     },
     "resultingcrystal": {
         "main_key": "resulting_crystal",
         "schema": "cpfs_synthesis.cpfs_schemes.CPFSCrystal",
-        "IsArchive": "True",
-        "transformer": {
+        "is_archive": "True",
             "rules": {
                 "ID": {
                     "source": "General_information.Sample_ID",
@@ -86,17 +81,15 @@
                     "source": "Basic_properties_of_the_sample.Crystal_shape",
                     "target": "crystal_shape"
                 },
-                "Safety": {
+                "gfwsdfsd": {
                     "source": "Basic_properties_of_the_sample.Crystal_orientation",
                     "target": "crystal_orientation"
                 }
             }
-        }
     },
     "synthesis_components": {
         "main_key": "synthesis_components_read_in",
         "schema": "cpfs_synthesis.schema_packages.bridgman.TempSynthesisComponents",
-        "transformer": {
             "rules": {
                 "initial material": {
                     "source": "Initial_materials.Sheet1.Initial_Material",
@@ -111,6 +104,5 @@
                     "target": "manufacturer"
                 }
             }
-        }
     }
 }

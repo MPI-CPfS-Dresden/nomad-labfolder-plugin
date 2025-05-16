@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     pass
 
 
-import importlib
 import json
 import re
 from urllib.parse import parse_qs, urlparse
@@ -19,17 +18,16 @@ from nomad.datamodel.data import (
     EntryData,
 )
 from nomad.datamodel.metainfo.annotations import (
-    BrowserAnnotation,
     ELNAnnotation,
-    Rules,
 )
 from nomad.metainfo import (
     Quantity,
     SchemaPackage,
     Section,
 )
-from nomad.utils.json_transformer import Transformer
 from nomad_material_processing.utils import create_archive
+
+from labfolder_plugin.jsonimport import MappedJson
 
 configuration = config.get_plugin_entry_point(
     'labfolder_plugin:schema_package_entry_point'
@@ -54,47 +52,59 @@ def restructure_data(labfolder_structure):
             b = dict()
             for line2 in line['children']:
                 if line2['type'] == 'DESCRIPTIVE_DATA_ELEMENT':
-                    b.update({line2['title'].replace(' ', '_'): line2['description']})
+                    if line2['description']:
+                        b.update(
+                            {line2['title'].replace(' ', '_'): line2['description']}
+                        )
                 if line2['type'] == 'SINGLE_DATA_ELEMENT':
-                    b.update(
-                        {
-                            line2['title'].replace(' ', '_'): {
-                                'value': line2['value'],
-                                'unit': line2['unit'],
+                    if line2['value']:
+                        b.update(
+                            {
+                                line2['title'].replace(' ', '_'): {
+                                    'value': line2['value'],
+                                    'unit': line2['unit'],
+                                }
                             }
-                        }
-                    )
+                        )
                 if line2['type'] == 'DATA_ELEMENT_GROUP':
                     c = dict()
                     for line3 in line['children']:
                         if line3['type'] == 'DESCRIPTIVE_DATA_ELEMENT':
-                            c.update(
-                                {line3['title'].replace(' ', '_'): line3['description']}
-                            )
-                        if line3['type'] == 'SINGLE_DATA_ELEMENT':
-                            c.update(
-                                {
-                                    line3['title'].replace(' ', '_'): {
-                                        'value': line3['value'],
-                                        'unit': line3['unit'],
+                            if line3['description']:
+                                c.update(
+                                    {
+                                        line3['title'].replace(' ', '_'): line3[
+                                            'description'
+                                        ]
                                     }
-                                }
-                            )
+                                )
+                        if line3['type'] == 'SINGLE_DATA_ELEMENT':
+                            if line3['value']:
+                                c.update(
+                                    {
+                                        line3['title'].replace(' ', '_'): {
+                                            'value': line3['value'],
+                                            'unit': line3['unit'],
+                                        }
+                                    }
+                                )
                     b.update({line2['title']: c})
             simpler_structure.update({line['title'].replace(' ', '_'): b})
         if line['type'] == 'DESCRIPTIVE_DATA_ELEMENT':
-            simpler_structure.update(
-                {line['title'].replace(' ', '_'): line['description']}
-            )
+            if line['description']:
+                simpler_structure.update(
+                    {line['title'].replace(' ', '_'): line['description']}
+                )
         if line['type'] == 'SINGLE_DATA_ELEMENT':
-            simpler_structure.update(
-                {
-                    line['title'].replace(' ', '_'): {
-                        'value': line['value'],
-                        'unit': line['unit'],
+            if line['value']:
+                simpler_structure.update(
+                    {
+                        line['title'].replace(' ', '_'): {
+                            'value': line['value'],
+                            'unit': line['unit'],
+                        }
                     }
-                }
-            )
+                )
     return simpler_structure
 
 
@@ -128,28 +138,6 @@ def restructure_table(labfolder_structure):
     return simpler_structure
 
 
-def get_class(class_string, logger):
-    try:
-        class_obj = getattr(
-            importlib.import_module('.'.join(class_string.split('.')[:-1])),
-            class_string.split('.')[-1],
-        )
-        return class_obj
-    except AttributeError:
-        logger.warning(
-            'The module '
-            + '.'.join(class_string.split('.')[:-1])
-            + ' has no class '
-            + class_string.split('.')[-1]
-            + '.'
-        )
-    except ModuleNotFoundError:
-        logger.warning(
-            'The module ' + '.'.join(class_string.split('.')[:-1]) + ' was not found.'
-        )
-    return
-
-
 def expandrules(json):
     rules = json['transformer']['rules']
     for key in rules.keys():
@@ -176,26 +164,19 @@ class LabFolderImport(EntryData):
         self.logger = None
 
     project_url = Quantity(type=str, a_eln=dict(component='StringEditQuantity'))
-    labfolder_email = Quantity(type=str, a_eln=dict(component='StringEditQuantity'))
-    password = Quantity(
-        type=str,
-        a_eln=dict(component='StringEditQuantity', props=dict(type='password')),
-    )
     import_entry_id = Quantity(
         type=str,
         a_eln=ELNAnnotation(
             component='StringEditQuantity',
         ),
     )
-
-    mapping_file = Quantity(
+    labfolder_email = Quantity(type=str, a_eln=dict(component='StringEditQuantity'))
+    password = Quantity(
         type=str,
-        description="""
-        The file with the schema mapping. (.json file).
-        """,
-        a_browser=BrowserAnnotation(adaptor='RawFileAdaptor'),
-        a_eln=ELNAnnotation(component='FileEditQuantity'),
+        a_eln=dict(component='StringEditQuantity', props=dict(type='password')),
     )
+
+    mapper_key = Quantity(type=str, a_eln=dict(component='StringEditQuantity'))
 
     def _labfolder_api_method(
         self, method, url, msg='cannot do labfolder api request', **kwargs
@@ -261,22 +242,11 @@ class LabFolderImport(EntryData):
 
         if (
             not self.project_url
+            or not self.import_entry_id
             or not self.labfolder_email
             or not self.password
-            or not self.import_entry_id
         ):
             logger.error('missing information, cannot import project')
-            raise LabfolderImportError()
-
-        if self.mapping_file:
-            if self.mapping_file.endswith('.json'):
-                import json
-
-                with archive.m_context.raw_file(self.mapping_file, 'r') as mapping:
-                    inp = json.load(mapping)
-
-        else:
-            logger.error('Could not find mapping file. Aborting...')
             raise LabfolderImportError()
 
         try:
@@ -332,46 +302,23 @@ class LabFolderImport(EntryData):
 
                     content.update(content_data)
 
+        content.update({'nomadclass': 'mappedjson', 'mapper_key': self.mapper_key})
+
         logger.info(content)
+
+        filename = (
+            f'labfolder_project_{project_ids[0]}_entry_{self.import_entry_id}.json'
+        )
+        with archive.m_context.raw_file(filename, 'w') as outfile:
+            outfile.write(json.dumps(content))
+
+        toparse = MappedJson(json_file=filename)
+
+        create_archive(toparse, archive, filename.replace('.json', '.archive.json'))
 
         # Resetting Token and Logging out: Invalidating all access tokens
         self._clear_user_data()
         self._labfolder_api_method(requests.post, '/auth/logout')
-
-        mainmapper = expandrules(inp['main'])
-        mainrules = {'main_transformation': Rules(**mainmapper['transformer'])}
-        maintransformer = Transformer(mainrules)
-        transformed_main = maintransformer.transform(content, 'main_transformation')
-        logger.info(transformed_main)
-
-        mainclass = get_class(mainmapper['schema'], logger)()
-        mainclass.m_update_from_dict(transformed_main)
-
-        for key in inp.keys():
-            if key == 'main':
-                continue
-            submapper = expandrules(inp[key])
-            subclass = get_class(submapper['schema'], logger)()
-            subrules = {'sub_transformation': Rules(**submapper['transformer'])}
-            subtransformer = Transformer(subrules)
-            transformed_sub = subtransformer.transform(content, 'sub_transformation')
-            logger.info(transformed_sub)
-            subclass.m_update_from_dict(transformed_sub)
-            if 'IsArchive' in submapper.keys() and submapper['IsArchive'] == 'True':
-                sub_ref = create_archive(
-                    subclass,
-                    archive,
-                    subclass.name + '.archive.json',
-                )
-                setattr(mainclass, key, sub_ref)
-            else:
-                setattr(mainclass, key, subclass)
-
-        create_archive(
-            mainclass,
-            archive,
-            mainclass.name + '.archive.json',
-        )
 
 
 m_package.__init_metainfo__()
