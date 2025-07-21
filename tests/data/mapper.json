@@ -86,7 +86,7 @@
                     "source": "Basic_properties_of_the_sample.Crystal_shape",
                     "target": "crystal_shape"
                 },
-                "Safety": {
+                "Orientation": {
                     "source": "Basic_properties_of_the_sample.Crystal_orientation",
                     "target": "crystal_orientation"
                 }
