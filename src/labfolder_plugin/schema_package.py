@@ -25,9 +25,8 @@ from nomad.metainfo import (
     SchemaPackage,
     Section,
 )
+from nomad_json_parser.schema_packages.jsonimport import MappedJson
 from nomad_material_processing.utils import create_archive
-
-from labfolder_plugin.jsonimport import MappedJson
 
 configuration = config.get_plugin_entry_point(
     'labfolder_plugin:schema_package_entry_point'
@@ -302,7 +301,7 @@ class LabFolderImport(EntryData):
 
                     content.update(content_data)
 
-        content.update({'nomadclass': 'mappedjson', 'mapper_key': self.mapper_key})
+        content.update({'mapped_json_class_key': self.mapper_key})
 
         logger.info(content)
 
